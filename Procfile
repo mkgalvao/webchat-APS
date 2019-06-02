@@ -1,1 +1,1 @@
-web: gunicorn -k flask_sockets.worker chat:app --log-file=- chat:app
+web: gunicorn -k flask_sockets.worker --log-level=debug chat:app
