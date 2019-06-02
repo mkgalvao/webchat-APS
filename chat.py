@@ -35,7 +35,8 @@ class ChatBackend(object):
     def register(self, client):
         """Registra a conexão do WebSocket para as atualizações da lista de client."""
         self.clients.append(client)
-        print('client registered')
+        print('client registered {}'.format(client))
+        print('Num of Clients ', len(self.clients)
 
     def broadcast(self, message):
         if message:
