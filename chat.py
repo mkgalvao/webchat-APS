@@ -35,11 +35,11 @@ class ChatBackend(object):
     def register(self, client):
         """Registra a conexão do WebSocket para as atualizações da lista de client."""
         self.clients.append(client)
-        logging.info(u'client registered')
+        logging.info('client registered')
 
     def broadcast(self, message):
         if message:
-            logging.info(u'Inserting message: {}'.format(message))
+            logging.info('Inserting message: {}'.format(message))
             for client in self.clients:
                 gevent.spawn(self.send, client, message)
 
@@ -48,14 +48,14 @@ class ChatBackend(object):
         automaticamente discarta conexões inválidas"""
         try:
             client.send(data)
-            logging.info(u'Message sent: {}'.format(data))
-        except Exception:
+            logging.info('Message sent: {}'.format(data))
+        except Exception as e:
             self.clients.remove(client)
-            logging.error('error sending message')
+            logging.exception('error sending message')
 
 
     def start(self):
-        logging.info(u'Chat started')
+        logging.info('Chat started')
 
 chats = ChatBackend()
 chats.start()
