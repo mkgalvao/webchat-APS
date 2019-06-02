@@ -6,10 +6,12 @@ Esse repositório faz parte do trabalho de APS da UNIP 1/2019
 ## Montando o ambiente de desenvolvimento
 
 1. Crie uma grátis conta no Heroku: https://heroku.com
+1. Configure um meio de pagamento na conta. Não será cobrado, mas é necessário.
 1. Instale o heroku CLI: https://devcenter.heroku.com/articles/heroku-cli
 1. Crie sua app Heroku:
    ```bash
    $ heroku create
+   $ heroku addons:create heroku-redis
 
    Creating limitless-ocean-5046... done, stack is heroku-18
    http://limitless-ocean-5046.herokuapp.com/ | git@heroku.com:limitless-ocean-5046.git

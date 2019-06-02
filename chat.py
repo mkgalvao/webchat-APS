@@ -16,15 +16,19 @@ Victor Mendes Ribeiro dos Santos – C435244
 
 import os
 import logging
+import redis
 import gevent
 from flask import Flask, render_template
 from flask_sockets import Sockets
+
+REDIS_URL = os.environ['REDIS_URL']
+REDIS_CHAN = 'chat'
 
 app = Flask(__name__)
 app.debug = 'DEBUG' in os.environ
 
 sockets = Sockets(app)
-
+redis = redis.from_url(REDIS_URL)
 
 class ChatBackend(object):
     """ Interface que registra e atualiza os clientes do WebSocket"""
@@ -35,14 +39,16 @@ class ChatBackend(object):
     def register(self, client):
         """Registra a conexão do WebSocket para as atualizações da lista de client."""
         self.clients.append(client)
-        print('client registered {}'.format(client))
         print('Num of Clients ', len(self.clients))
+        self.pubsub = redis.pubsub()
+        self.pubsub.subscribe(REDIS_CHAN)
 
-    def broadcast(self, message):
-        if message:
-            print('Inserting message: {}'.format(message))
-            for client in self.clients:
-                gevent.spawn(self.send, client, message)
+    def __iter_data(self):
+        for message in self.pubsub.listen():
+            data = message.get('data')
+            if message['type'] == 'message':
+                print(u'Sending message: {}'.format(data))
+                yield data
 
     def send(self, client, data):
         """ Envia o dado do cliente registrado e
@@ -54,9 +60,16 @@ class ChatBackend(object):
             self.clients.remove(client)
             app.logger.exception('error sending message')
 
+    def run(self):
+        """Esperando msgs do Redis e enviando aos clientes."""
+        for data in self.__iter_data():
+            for client in self.clients:
+                gevent.spawn(self.send, client, data)
 
     def start(self):
+        """Redis subscription em background."""
         print('Chat started')
+        gevent.spawn(self.run)
 
 chats = ChatBackend()
 chats.start()
@@ -72,7 +85,9 @@ def inbox(ws):
         # sleep para evitar * constantes * context-switches..
         gevent.sleep(0.1)
         message = ws.receive()
-        chats.broadcast(message)
+        if message:
+            print('Inserting message: {}'.format(message))
+            redis.publish(REDIS_CHAN, message)
 
 @sockets.route('/receive')
 def outbox(ws):
