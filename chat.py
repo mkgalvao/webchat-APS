@@ -49,7 +49,7 @@ class ChatBackend(object):
         try:
             client.send(data)
             logging.info('Message sent: {}'.format(data))
-        except Exception as e:
+        except Exception:
             self.clients.remove(client)
             logging.exception('error sending message')
 
@@ -69,7 +69,7 @@ def inbox(ws):
     """Recebe as mensaggens do chat e adiciona-as ao broadcast"""
     while not ws.closed:
         # sleep para evitar * constantes * context-switches..
-        gevent.sleep(0.1)
+        # gevent.sleep(0.1)
         message = ws.receive()
         chats.broadcast(message)
 
@@ -81,6 +81,3 @@ def outbox(ws):
     while not ws.closed:
         # Context switch while `ChatBackend.start` is running in the background.
         gevent.sleep(0.1)
-
-
-
