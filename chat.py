@@ -35,14 +35,14 @@ class ChatBackend(object):
 
     def __init__(self):
         self.clients = list()
+        self.pubsub = redis.pubsub()
+        self.pubsub.subscribe(REDIS_CHAN)
 
     def register(self, client):
         """Registra a conexão do WebSocket para as atualizações da lista de client."""
         self.clients.append(client)
         print('Num of Clients ', len(self.clients))
-        self.pubsub = redis.pubsub()
-        self.pubsub.subscribe(REDIS_CHAN)
-
+        
     def __iter_data(self):
         for message in self.pubsub.listen():
             data = message.get('data')
